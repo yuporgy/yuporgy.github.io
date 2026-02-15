@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Библиотека вопросов — Мокапы</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f1219;
+      --bg-card: #1a1f2e;
+      --bg-card-hover: #252d3d;
+      --border: #3d3a32;
+      --text: #e8eaef;
+      --text-muted: #9a9589;
+      --accent: #d4a017;
+      --accent-hover: #e8b923;
+      --accent-light: #f0c94a;
+      --success: #34c759;
+      --warning: #e8b923;
+      --danger: #ff453a;
+      --progress-bg: #2d2a24;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Manrope', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 20px;
+      position: relative;
+    }
+
+    @media (max-width: 499px) {
+      #questions-list { grid-template-columns: 1fr; }
+      #questions-list .question-item { min-width: unset; }
+    }
+    @media (min-width: 768px) {
+      .app { max-width: 700px; padding: 32px; }
+      .card-grid { grid-template-columns: repeat(3, 1fr); }
+      #screen1-level-chips.chips-full { flex-direction: row; flex-wrap: nowrap; }
+      #screen1-level-chips.chips-full .chip { width: auto; flex: 1; min-width: 0; }
+      .hub-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+      #companies-list, #categories-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      #companies-list .card, #categories-list .card { margin-bottom: 0; }
+      #questions-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(200px, 1fr));
+        gap: 12px;
+      }
+      #questions-list .question-item { margin-bottom: 0; min-width: 200px; }
+    }
+
+    .screen { display: none; animation: fadeIn 0.2s ease; }
+    .screen.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .btn-back {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: all 0.2s;
+    }
+    .btn-back:hover { background: var(--bg-card-hover); border-color: var(--accent); color: var(--accent); }
+    .header h1 { font-size: 1.25rem; font-weight: 700; }
+
+    h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 24px; }
+    .subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; }
+
+    .progress-bar {
+      height: 8px;
+      background: var(--progress-bg);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 8px 0 4px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-light));
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+    .progress-text { font-size: 0.85rem; color: var(--text-muted); }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .chip {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .chip:hover { border-color: var(--accent); background: var(--bg-card-hover); }
+    .chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .chip.small { padding: 6px 12px; font-size: 0.8rem; }
+    .chips-full { flex-direction: column; }
+    .chips-full .chip { width: 100%; display: flex; justify-content: center; align-items: center; }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .card:hover { background: var(--bg-card-hover); border-color: var(--accent); transform: translateY(-1px); }
+    .card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(212,160,23,0.35); }
+    .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 24px; }
+    .card-grid .card { margin-bottom: 0; display: flex; flex-direction: row; align-items: center; gap: 12px; padding: 16px 20px; text-align: left; }
+    .card-grid .card-icon { font-size: 1.75rem; flex-shrink: 0; margin-bottom: 0; }
+    .card-grid .card-title { font-weight: 600; margin-bottom: 2px; }
+    .card-grid .card-desc { font-size: 0.8rem; color: var(--text-muted); display: block; margin-top: 2px; }
+    .card-meta { font-size: 0.85rem; color: var(--text-muted); margin-top: 8px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 24px;
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      margin-top: 24px;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-block { margin-top: 12px; }
+
+    .hub-cards { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
+    .hub-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .hub-card:hover { border-color: var(--accent); }
+    .hub-card-icon { font-size: 2rem; }
+    .hub-card-content { flex: 1; }
+    .hub-card-title { font-weight: 600; margin-bottom: 4px; }
+    .hub-card-desc { font-size: 0.85rem; color: var(--text-muted); }
+    .hub-card-progress { font-size: 0.8rem; color: var(--accent); margin-top: 8px; }
+
+    .link-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 0;
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 0.95rem;
+      border: none;
+      background: none;
+      margin-top: 16px;
+    }
+    .link-btn:hover { text-decoration: underline; }
+
+    .breadcrumb { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; }
+    .question-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      min-width: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .question-item:hover { border-color: var(--accent); }
+    .question-thumb {
+      width: 48px; height: 36px; object-fit: cover; border-radius: 6px; flex-shrink: 0;
+    }
+    .question-num { font-weight: 600; min-width: 24px; }
+    .question-preview { flex: 1; font-size: 0.9rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .question-status { font-size: 1rem; }
+    .star { cursor: pointer; color: var(--text-muted); }
+    .star.filled { color: var(--warning); }
+    .status-ok { color: var(--success); }
+    .status-fail { color: var(--danger); }
+
+    .question-card { position: relative; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 20px 0; }
+    .question-card .star { position: absolute; top: 16px; right: 16px; }
+    .question-context { font-size: 0.85rem; color: var(--text-muted); }
+    .question-text { font-size: 1.05rem; line-height: 1.6; margin-bottom: 24px; white-space: pre-wrap; }
+    .question-image {
+      max-width: 100%; border-radius: var(--radius-sm); margin: 16px 0; display: block;
+    }
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.95rem;
+      resize: vertical;
+      margin-bottom: 16px;
+    }
+    textarea:focus, input[type="text"]:focus { outline: none; border-color: var(--accent); }
+    input[type="text"] {
+      width: 100%;
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1rem;
+      margin-bottom: 16px;
+    }
+    .radio-option, .checkbox-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    .radio-option:hover, .checkbox-option:hover { border-color: var(--accent); }
+    .radio-option.selected, .checkbox-option.selected { border-color: var(--accent); background: rgba(212,160,23,0.18); }
+    .hint-block {
+      background: rgba(255,159,10,0.1);
+      border: 1px solid rgba(255,159,10,0.3);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin: 16px 0;
+      font-size: 0.9rem;
+    }
+    .answer-block {
+      background: rgba(52,199,89,0.1);
+      border: 1px solid rgba(52,199,89,0.3);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin: 16px 0;
+      font-size: 0.9rem;
+    }
+    .answer-block.incorrect { background: rgba(255,69,58,0.1); border-color: rgba(255,69,58,0.3); }
+    .question-nav { display: flex; gap: 12px; margin-top: 24px; align-items: stretch; }
+    .question-nav .btn { flex: 1; margin-top: 0 !important; min-height: 48px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    .empty-state-icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.5; }
+
+    .progress-section { margin-bottom: 24px; }
+    .progress-section h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 12px; color: var(--text-muted); }
+    .progress-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .progress-row:hover { color: var(--accent); }
+    .progress-row:last-child { border-bottom: none; }
+    .progress-row .mini-bar {
+      width: 80px;
+      height: 6px;
+      background: var(--progress-bg);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-row .mini-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+    .progress-row:hover { color: var(--accent); }
+    .recommendation {
+      background: rgba(255,159,10,0.1);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-top: 20px;
+      font-size: 0.9rem;
+    }
+    .recommendation strong { color: var(--warning); }
+
+    .test-result {
+      text-align: center;
+      padding: 32px 24px;
+    }
+    .test-result-icon { font-size: 4rem; margin-bottom: 16px; }
+    .test-result-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+    .test-result-score {
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 24px 0 8px;
+    }
+    .test-result-detail { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 24px; }
+    .test-result-context { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 32px; }
+    .test-result-buttons { display: flex; flex-direction: column; gap: 12px; }
+
+    .top-bar {
+      display: none;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 0 0 20px;
+      margin-bottom: 4px;
+    }
+    .top-bar.visible { display: flex; }
+    .top-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+    }
+    .top-bar-left h2 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-dropdown { position: relative; }
+    .user-account {
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .user-account:hover { background: var(--bg-card); }
+    .user-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 0;
+      min-width: 140px;
+      box-shadow: var(--shadow);
+      z-index: 100;
+    }
+    .user-menu.open { display: block; }
+    .user-menu a {
+      display: block;
+      padding: 10px 16px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .user-menu a:hover { background: var(--bg-card-hover); color: var(--accent); }
+
+    .login-screen {
+      max-width: 360px;
+      margin: 0 auto;
+      padding-top: 48px;
+    }
+    .login-screen h2 { text-align: center; margin-bottom: 8px; }
+    .login-screen .subtitle { text-align: center; margin-bottom: 32px; }
+    .login-screen input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 1rem;
+      margin-bottom: 16px;
+    }
+    .login-screen input:focus { outline: none; border-color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="top-bar" id="top-bar">
+      <div class="top-bar-left">
+        <button class="btn-back" id="top-bar-back" onclick="handleTopBarBack()" style="display:none;flex-shrink:0">←</button>
+        <h2 id="top-bar-title" style="margin:0;font-size:1.5rem">К чему готовишься?</h2>
+      </div>
+      <div class="user-dropdown">
+        <div class="user-account" onclick="toggleUserMenu(event)">
+          <span id="user-name">Алексей</span>
+          <span style="font-size:0.7em">▼</span>
+        </div>
+        <div class="user-menu" id="user-menu">
+        <a onclick="showScreen(7);closeUserMenu()">⭐ Избранные вопросы (3)</a>
+        <a onclick="showScreen(8);closeUserMenu()">📊 Мой прогресс</a>
+        <a onclick="showProfile();closeUserMenu()">Профиль</a>
+        <a onclick="logout();closeUserMenu()">Выйти</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Экран 0: Авторизация -->
+    <div id="screen-0" class="screen active">
+      <div class="login-screen">
+        <h2>Вход</h2>
+        <p class="subtitle">Войдите в аккаунт для доступа к библиотеке вопросов</p>
+        <input type="text" id="login-input" placeholder="Логин или email" onkeypress="if(event.key==='Enter')doLogin()">
+        <input type="password" id="password-input" placeholder="Пароль" onkeypress="if(event.key==='Enter')doLogin()">
+        <button class="btn btn-primary" onclick="doLogin()">Войти</button>
+      </div>
+    </div>
+
+    <!-- Экран 1: Выбор роли и грейда -->
+    <div id="screen-1" class="screen">
+      <p class="subtitle">Выбери направление и уровень — прогресс привязан к паре «направление + грейд»</p>
+      <div class="card-grid" id="roles-grid">
+        <div class="card" data-role="frontend">
+          <span class="card-icon">⚛️</span>
+          <div><span class="card-title">Frontend</span><span class="card-desc">React, Vue, JS</span></div>
+        </div>
+        <div class="card" data-role="backend">
+          <span class="card-icon">⚙️</span>
+          <div><span class="card-title">Backend</span><span class="card-desc">Серверы, API</span></div>
+        </div>
+        <div class="card" data-role="fullstack">
+          <span class="card-icon">🔗</span>
+          <div><span class="card-title">Fullstack</span><span class="card-desc">Full stack</span></div>
+        </div>
+        <div class="card" data-role="qa">
+          <span class="card-icon">🧪</span>
+          <div><span class="card-title">QA</span><span class="card-desc">Тестирование</span></div>
+        </div>
+        <div class="card" data-role="data">
+          <span class="card-icon">📊</span>
+          <div><span class="card-title">Data</span><span class="card-desc">Аналитика, ML</span></div>
+        </div>
+        <div class="card" data-role="devops">
+          <span class="card-icon">🐳</span>
+          <div><span class="card-title">DevOps</span><span class="card-desc">Инфраструктура</span></div>
+        </div>
+      </div>
+      <p class="subtitle" style="margin-top:24px">Выбери уровень:</p>
+      <div class="chips chips-full" id="screen1-level-chips">
+        <span class="chip" data-level="junior">Джуниор</span>
+        <span class="chip" data-level="middle">Мидл</span>
+        <span class="chip" data-level="senior">Сеньор</span>
+      </div>
+      <p class="progress-text" id="screen1-level-hint" style="margin-top:-8px;margin-bottom:16px">Вернись сюда после прохождения уровня, чтобы выбрать следующий</p>
+      <button class="btn btn-primary" id="btn-continue" disabled>Продолжить</button>
+    </div>
+
+    <!-- Экран 2: Главная библиотеки -->
+    <div id="screen-2" class="screen">
+      <p class="progress-text" id="hub-progress" style="margin:0 0 8px">Решено 12 из 40 • 30%</p>
+      <div class="progress-bar"><div class="progress-fill" id="hub-progress-bar" style="width: 30%"></div></div>
+      <div class="hub-cards">
+        <div class="hub-card" onclick="showScreen(3)">
+          <span class="hub-card-icon">🏢</span>
+          <div class="hub-card-content">
+            <div class="hub-card-title">По компаниям</div>
+            <div class="hub-card-desc">Частые вопросы в Т-Банк, Сбер, Яндекс…</div>
+            <div class="hub-card-progress">3 из 8 компаний с прогрессом</div>
+          </div>
+        </div>
+        <div class="hub-card" onclick="showScreen(4)">
+          <span class="hub-card-icon">📚</span>
+          <div class="hub-card-content">
+            <div class="hub-card-title">По категориям</div>
+            <div class="hub-card-desc">Темы: алгоритмы, JS, SQL, софт-скиллы</div>
+            <div class="hub-card-progress">5 из 12 тем с прогрессом</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Экран 3: Список компаний -->
+    <div id="screen-3" class="screen">
+      <div class="chips">
+        <span class="chip active small">Все</span>
+        <span class="chip small">Не начатые</span>
+        <span class="chip small">В процессе</span>
+        <span class="chip small">Пройденные</span>
+      </div>
+      <p class="subtitle">Уровень: <strong id="companies-level">Джуниор</strong></p>
+      <div id="companies-list">
+        <div class="card" onclick="openQuestions('company', 'Т-Банк')">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="card-title">Т-Банк</span>
+            <span class="card-meta">3/10 • 30%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:30%"></div></div>
+          <span style="font-size:0.8rem;color:var(--warning)">В процессе</span>
+        </div>
+        <div class="card" onclick="openQuestions('company', 'Сбер')">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="card-title">Сбер</span>
+            <span class="card-meta">0/10 • 0%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+          <span style="font-size:0.8rem;color:var(--text-muted)">Не начата</span>
+        </div>
+        <div class="card" onclick="openQuestions('company', 'Яндекс')">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="card-title">Яндекс</span>
+            <span class="card-meta">5/10 • 50%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:50%"></div></div>
+          <span style="font-size:0.8rem;color:var(--warning)">В процессе</span>
+        </div>
+        <div class="card" onclick="openQuestions('company', 'VK')">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="card-title">VK</span>
+            <span class="card-meta">4/10 • 40%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:40%"></div></div>
+          <span style="font-size:0.8rem;color:var(--warning)">В процессе</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Экран 4: Список категорий -->
+    <div id="screen-4" class="screen">
+      <p class="subtitle">Уровень: <strong id="categories-level">Джуниор</strong></p>
+      <div id="categories-list">
+        <div class="card" onclick="openQuestions('category', 'Алгоритмы')">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="card-title">🧮 Алгоритмы</span>
+            <span class="card-meta">2/10 • 20%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:20%"></div></div>
+          <span style="font-size:0.8rem;color:var(--warning)">В процессе</span>
+        </div>
+        <div class="card" onclick="openQuestions('category', 'JavaScript')">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="card-title">📜 JavaScript</span>
+            <span class="card-meta">4/10 • 40%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:40%"></div></div>
+          <span style="font-size:0.8rem;color:var(--warning)">В процессе</span>
+        </div>
+        <div class="card" onclick="openQuestions('category', 'SQL')">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="card-title">🗄️ SQL</span>
+            <span class="card-meta">0/10 • 0%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+          <span style="font-size:0.8rem;color:var(--text-muted)">Не начата</span>
+        </div>
+        <div class="card" onclick="openQuestions('category', 'Поведенческие')">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="card-title">💬 Поведенческие</span>
+            <span class="card-meta">4/10 • 40%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:40%"></div></div>
+          <span style="font-size:0.8rem;color:var(--warning)">В процессе</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Экран 5: Список вопросов -->
+    <div id="screen-5" class="screen">
+      <button class="btn btn-primary btn-block" onclick="startQuestionsInRow()">Пройти тест</button>
+      <div id="questions-list" style="margin-top:20px"></div>
+    </div>
+
+    <!-- Экран 6: Карточка вопроса -->
+    <div id="screen-6" class="screen">
+      <div class="question-card">
+        <span class="star" id="fav-star" onclick="toggleFavorite()">☆</span>
+        <div class="question-text" id="question-text"></div>
+        <div id="question-image-wrap"></div>
+        <div id="answer-area">
+          <div id="answer-input-area"></div>
+          <button class="btn btn-secondary" style="margin-bottom:8px" onclick="toggleHint()">💡 Показать подсказку</button>
+          <div id="hint-block" class="hint-block" style="display:none"></div>
+          <button class="btn btn-primary" onclick="checkAnswer()">Проверить</button>
+        </div>
+        <div id="result-area" style="display:none">
+          <div class="answer-block" id="correct-answer-block">
+            <strong>Правильный ответ:</strong><br>
+            <span id="correct-answer-text"></span>
+          </div>
+          <div class="question-nav">
+            <button class="btn btn-secondary" onclick="prevQuestion()">← Предыдущий</button>
+            <button class="btn btn-primary" id="btn-next-question" onclick="nextQuestion()">Следующий →</button>
+          </div>
+          <button class="btn btn-secondary btn-block" onclick="backToQuestionsList()">Назад к списку</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Экран 7: Избранные вопросы -->
+    <div id="screen-7" class="screen">
+      <button class="btn btn-primary btn-block" id="btn-favorites-test" onclick="startFavoritesTest()" style="margin-bottom:20px">⭐ Пройти тест по избранным (3)</button>
+      <div id="favorites-list">
+        <div class="card" onclick="openQuestionFromFav(1)">
+          <div class="card-title">В чём разница между let и const?</div>
+          <div class="card-meta">Т-Банк • Джуниор • Отвечен верно</div>
+          <button class="btn btn-secondary" style="padding:8px 16px;margin-top:8px;font-size:0.85rem" onclick="event.stopPropagation();removeFavorite(this)">Убрать из избранного</button>
+        </div>
+        <div class="card" onclick="openQuestionFromFav(2)">
+          <div class="card-title">Расскажите про паттерн Singleton</div>
+          <div class="card-meta">Алгоритмы • Мидл • Не отвечен</div>
+          <button class="btn btn-secondary" style="padding:8px 16px;margin-top:8px;font-size:0.85rem" onclick="event.stopPropagation();removeFavorite(this)">Убрать из избранного</button>
+        </div>
+        <div class="card" onclick="openQuestionFromFav(3)">
+          <div class="card-title">Как работает virtual DOM?</div>
+          <div class="card-meta">JavaScript • Джуниор • Отвечен неверно</div>
+          <button class="btn btn-secondary" style="padding:8px 16px;margin-top:8px;font-size:0.85rem" onclick="event.stopPropagation();removeFavorite(this)">Убрать из избранного</button>
+        </div>
+      </div>
+      <div id="favorites-empty" class="empty-state" style="display:none">
+        <div class="empty-state-icon">⭐</div>
+        <p>Пока нет избранных вопросов.</p>
+        <p style="margin-top:8px">Отмечайте звёздочкой вопросы на карточке — они появятся здесь.</p>
+      </div>
+    </div>
+
+    <!-- Экран 8: Прогресс -->
+    <div id="screen-8" class="screen">
+      <div class="chips" style="margin-bottom:24px">
+        <span class="chip active" id="progress-role-chip" onclick="showScreen(1)">Frontend • Джуниор</span>
+      </div>
+      <div class="progress-section">
+        <h3>Общий прогресс по уровню</h3>
+        <div class="progress-bar"><div class="progress-fill" id="progress-overall-bar" style="width:30%"></div></div>
+        <p class="progress-text" id="progress-overall-text">Решено 12 из 40 вопросов • 30%</p>
+      </div>
+      <div class="progress-section">
+        <h3>По уровням</h3>
+        <div class="progress-row">
+          <span>Джуниор</span>
+          <div class="mini-bar"><div class="mini-fill" style="width:30%"></div></div>
+          <span>12/40</span>
+        </div>
+        <div class="progress-row">
+          <span>Мидл</span>
+          <div class="mini-bar"><div class="mini-fill" style="width:0%"></div></div>
+          <span>0/20</span>
+        </div>
+        <div class="progress-row">
+          <span>Сеньор</span>
+          <div class="mini-bar"><div class="mini-fill" style="width:0%"></div></div>
+          <span>0/20</span>
+        </div>
+      </div>
+      <div class="progress-section">
+        <h3>По компаниям</h3>
+        <div class="progress-row" onclick="openQuestions('company','Т-Банк')">
+          <span>Т-Банк</span>
+          <div class="mini-bar"><div class="mini-fill" style="width:30%"></div></div>
+          <span>3/10</span>
+        </div>
+        <div class="progress-row" onclick="openQuestions('company','Сбер')">
+          <span>Сбер</span>
+          <div class="mini-bar"><div class="mini-fill" style="width:0%"></div></div>
+          <span>0/10</span>
+        </div>
+        <div class="progress-row" onclick="openQuestions('company','Яндекс')">
+          <span>Яндекс</span>
+          <div class="mini-bar"><div class="mini-fill" style="width:50%"></div></div>
+          <span>5/10</span>
+        </div>
+      </div>
+      <div class="progress-section">
+        <h3>По категориям</h3>
+        <div class="progress-row" onclick="openQuestions('category','Алгоритмы')">
+          <span>Алгоритмы</span>
+          <div class="mini-bar"><div class="mini-fill" style="width:20%"></div></div>
+          <span>2/10</span>
+        </div>
+        <div class="progress-row" onclick="openQuestions('category','JavaScript')">
+          <span>JavaScript</span>
+          <div class="mini-bar"><div class="mini-fill" style="width:40%"></div></div>
+          <span>4/10</span>
+        </div>
+      </div>
+      <div class="recommendation">
+        <strong>Слабые места:</strong> Алгоритмы (20% правильных), Системный дизайн (не начат)
+      </div>
+      <button class="btn btn-primary btn-block" onclick="showScreen(2)" style="margin-top:24px">В библиотеку</button>
+    </div>
+
+    <!-- Экран 9: Результаты пройденного теста -->
+    <div id="screen-9" class="screen">
+      <div class="test-result">
+        <div class="test-result-icon" id="result-icon">🎉</div>
+        <div class="test-result-title" id="result-title">Тест пройден!</div>
+        <div class="test-result-score" id="result-score">7/10</div>
+        <div class="test-result-detail" id="result-detail">70% правильных ответов</div>
+        <div class="test-result-context" id="result-context">Т-Банк • Джуниор</div>
+        <div class="test-result-buttons">
+          <button class="btn btn-primary" id="btn-retake" onclick="retakeTest()">Пройти тест ещё раз</button>
+          <button class="btn btn-secondary" id="btn-to-list" onclick="backToQuestionsFromResult()">К списку вопросов</button>
+          <button class="btn btn-secondary" onclick="showScreenFromResult()">В библиотеку</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Экран 10: Профиль -->
+    <div id="screen-10" class="screen">
+      <div class="card" style="cursor:default;margin-bottom:20px">
+        <div style="margin-bottom:12px">
+          <span class="progress-text">Имя</span>
+          <div style="font-size:1.1rem;margin-top:4px" id="profile-name">Алексей</div>
+        </div>
+        <div>
+          <span class="progress-text">Email</span>
+          <div style="font-size:1.1rem;margin-top:4px" id="profile-email">alexey@example.com</div>
+        </div>
+      </div>
+      <button class="btn btn-secondary" onclick="logout()">Выйти из аккаунта</button>
+    </div>
+  </div>
+
+  <script>
+    const TOTAL_QUESTIONS = 10;
+
+    const QUESTIONS_DATA = [
+      { text: 'Ключевое слово для объявления константы в JS?', type: 'short', placeholder: 'Одно слово', hint: 'Начинается на c...', answer: 'const' },
+      { text: '== и === — какой проверяет строго (тип + значение)?', type: 'choice', options: ['==', '==='], correct: 1, hint: 'Три символа', answer: '===', image: 'https://picsum.photos/400/200?random=4' },
+      { text: 'Функция внутри функции, сохраняющая доступ к внешней переменной — это?', type: 'short', placeholder: 'Одно слово', hint: 'Closure', answer: 'замыкание' },
+      { text: 'Какой цикл в JS обрабатывает асинхронные операции?', type: 'choice', options: ['Event loop', 'For loop', 'While loop'], correct: 0, hint: 'Событийный', answer: 'Event loop' },
+      { text: 'Промисы: resolve или reject — что при успехе?', type: 'choice', options: ['resolve', 'reject'], correct: 0, hint: 'Разрешить', answer: 'resolve' },
+      { text: 'Синтаксис для ожидания промиса (ключевое слово)?', type: 'short', placeholder: 'Одно слово', hint: 'async/...', answer: 'await' },
+      { text: 'React обновляет реальный DOM напрямую?', type: 'choice', options: ['Да', 'Нет, через Virtual DOM'], correct: 1, hint: 'Виртуальный', answer: 'Нет, через Virtual DOM' },
+      { text: 'Поднятие объявлений — как называется?', type: 'short', placeholder: 'Английское слово', hint: 'Hoisting', answer: 'hoisting' },
+      { text: 'call, apply, bind — какой сразу вызывает функцию?', type: 'choice', options: ['Только bind', 'call и apply', 'Все три'], correct: 1, hint: 'Вызов', answer: 'call и apply' },
+      { text: 'Наследование через __proto__ — какое?', type: 'choice', options: ['Классовое', 'Прототипное', 'Функциональное'], correct: 1, hint: 'От prototype', answer: 'Прототипное' }
+    ];
+
+    const QUESTIONS_BY_CATEGORY = {
+      'Алгоритмы': [
+        { text: 'Обозначение скорости роста алгоритма (Big O)?', type: 'short', placeholder: 'Одно слово', hint: 'O в скобках', answer: 'O(n)', image: 'https://picsum.photos/400/200?random=1' },
+        { text: 'Сложность бинарного поиска в отсортированном массиве?', type: 'choice', options: ['O(n)', 'O(log n)', 'O(n²)'], correct: 1, hint: 'Логарифм', answer: 'O(log n)' },
+        { text: 'Структура LIFO — как называется?', type: 'short', placeholder: 'Одно слово', hint: 'Стек по-английски', answer: 'стек' },
+        { text: 'Структура FIFO — как называется?', type: 'short', placeholder: 'Одно слово', hint: 'Очередь', answer: 'очередь' },
+        { text: 'Быстрая сортировка: в среднем какая сложность?', type: 'choice', options: ['O(n²)', 'O(n log n)', 'O(n)'], correct: 1, hint: 'n log n', answer: 'O(n log n)' },
+        { text: 'Хеш-таблица: средняя сложность поиска?', type: 'choice', options: ['O(n)', 'O(1)', 'O(log n)'], correct: 1, hint: 'Константа', answer: 'O(1)' },
+        { text: 'Рекурсия требует...', type: 'choice', options: ['Базовый случай', 'Только цикл', 'Ничего'], correct: 0, hint: 'Условие выхода', answer: 'Базовый случай' },
+        { text: 'Алгоритм обхода дерева «сначала корень»?', type: 'short', placeholder: 'Два слова', hint: 'Depth first...', answer: 'preorder' },
+        { text: 'Двусвязный список — у узла сколько ссылок?', type: 'choice', options: ['Одна', 'Две', 'Три'], correct: 1, hint: 'На два соседа', answer: 'Две' },
+        { text: 'Жадный алгоритм всегда даёт оптимальный результат?', type: 'choice', options: ['Да', 'Нет'], correct: 1, hint: 'Не всегда', answer: 'Нет' }
+      ],
+      'JavaScript': QUESTIONS_DATA,
+      'SQL': [
+        { text: 'Ключевое слово для выборки без дубликатов?', type: 'short', placeholder: 'Одно слово', hint: 'DISTINCT', answer: 'DISTINCT' },
+        { text: 'JOIN по совпадению ключей — какой?', type: 'choice', options: ['LEFT JOIN', 'INNER JOIN', 'FULL JOIN'], correct: 1, hint: 'Внутренний', answer: 'INNER JOIN', image: 'https://picsum.photos/400/200?random=2' },
+        { text: 'Группировка строк по полю — какая клауза?', type: 'short', placeholder: 'Два слова', hint: 'GROUP BY', answer: 'GROUP BY' },
+        { text: 'Фильтрация после GROUP BY — какая клауза?', type: 'short', placeholder: 'Два слова', hint: 'HAVING', answer: 'HAVING' },
+        { text: 'NULL = NULL в SQL возвращает true?', type: 'choice', options: ['Да', 'Нет', 'NULL (unknown)'], correct: 2, hint: 'Неизвестно', answer: 'NULL (unknown)' },
+        { text: 'Индекс ускоряет SELECT, но замедляет?', type: 'short', placeholder: 'Одна операция', hint: 'INSERT/UPDATE', answer: 'INSERT' },
+        { text: 'Подзапрос в FROM — это?', type: 'choice', options: ['CTE', 'Подзапрос-таблица', 'VIEW'], correct: 1, hint: 'Временная таблица', answer: 'Подзапрос-таблица' },
+        { text: 'Агрегатная функция для подсчёта строк?', type: 'short', placeholder: 'COUNT', hint: 'COUNT', answer: 'COUNT' },
+        { text: 'UNION удаляет дубликаты по умолчанию?', type: 'choice', options: ['Да', 'Нет'], correct: 0, hint: 'Да', answer: 'Да' },
+        { text: 'Транзакция: откат при ошибке — какая команда?', type: 'short', placeholder: 'ROLLBACK', hint: 'Откат', answer: 'ROLLBACK' }
+      ],
+      'Поведенческие': [
+        { text: 'Метод ответа на вопросы про опыт (акроним)?', type: 'short', placeholder: '4 буквы', hint: 'STAR', answer: 'STAR', image: 'https://picsum.photos/400/200?random=3' },
+        { text: 'S в STAR — что означает?', type: 'choice', options: ['Situation', 'Solution', 'Summary'], correct: 0, hint: 'Ситуация', answer: 'Situation' },
+        { text: 'Расскажите о конфликте с коллегой — что важно показать?', type: 'choice', options: ['Только свою правоту', 'Компромисс и результат', 'Кто виноват'], correct: 1, hint: 'Разрешение', answer: 'Компромисс и результат' },
+        { text: 'Почему хотите сменить работу? — лучше отвечать...', type: 'choice', options: ['Критикой текущей компании', 'Карьерными целями', 'Деньгами'], correct: 1, hint: 'Позитив', answer: 'Карьерными целями' },
+        { text: 'Ваша главная слабая сторона — как лучше подать?', type: 'short', placeholder: '2–3 слова', hint: 'С улучшением', answer: 'с планом работы над ней' },
+        { text: 'Вопрос «Куда видите себя через 5 лет?» — цель ответа?', type: 'choice', options: ['Фантазии', 'Соответствие целям компании', 'Зарплата'], correct: 1, hint: 'Релевантность', answer: 'Соответствие целям компании' },
+        { text: 'При дедлайне и перегрузке — что показать?', type: 'choice', options: ['Панику', 'Приоритизацию', 'Перекладывание'], correct: 1, hint: 'Управление', answer: 'Приоритизацию' },
+        { text: 'Почему мы должны взять именно вас? — ключевой посыл:', type: 'short', placeholder: '1–2 слова', hint: 'Уникальная ценность', answer: 'уникальная ценность' },
+        { text: 'Вопрос о зарплате — когда лучше озвучивать?', type: 'choice', options: ['В начале', 'После оффера', 'Когда спросят'], correct: 2, hint: 'Когда спросят', answer: 'Когда спросят' },
+        { text: 'Ошибка в продакшене — первое действие?', type: 'choice', options: ['Скрыть', 'Сообщить команде', 'Исправить молча'], correct: 1, hint: 'Коммуникация', answer: 'Сообщить команде' }
+      ]
+    };
+
+    const FAVORITES_QUESTIONS = [
+      { text: 'let и const — какой нельзя переназначить?', type: 'short', placeholder: 'Одно слово', hint: 'Constant', answer: 'const' },
+      { text: 'Паттерн с единственным экземпляром класса?', type: 'short', placeholder: 'Одно слово', hint: 'Single', answer: 'Singleton' },
+      { text: 'Virtual DOM — это копия реального DOM в памяти?', type: 'choice', options: ['Да', 'Нет'], correct: 0, hint: 'В памяти', answer: 'Да' }
+    ];
+
+    let state = {
+      isLoggedIn: false,
+      userName: 'Алексей',
+      userEmail: 'alexey@example.com',
+      prevScreenBeforeProfile: 1,
+      role: null,
+      roleLabel: null,
+      level: null,
+      questionsContext: { type: 'company', name: 'Т-Банк' },
+      currentQuestion: 1,
+      totalQuestions: TOTAL_QUESTIONS,
+      fromFavorites: false,
+      inRowMode: false,
+      isFavoritesTest: false,
+      currentQuestions: QUESTIONS_DATA,
+      testAnswers: [],
+      answered: false,
+      favorite: false
+    };
+
+    function getLevelLabel() {
+      const l = state.level || 'junior';
+      return l === 'junior' ? 'Джуниор' : l === 'middle' ? 'Мидл' : 'Сеньор';
+    }
+
+    function showScreen(num) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-' + num).classList.add('active');
+      const topBar = document.getElementById('top-bar');
+      topBar.classList.toggle('visible', state.isLoggedIn && num !== 0);
+      const titleEl = document.getElementById('top-bar-title');
+      if (titleEl) {
+        if (num === 2) titleEl.textContent = 'Библиотека • ' + (state.roleLabel || 'Frontend') + ' • ' + getLevelLabel();
+        else if (num === 5) titleEl.textContent = state.questionsContext ? (state.questionsContext.name + (state.questionsContext.type === 'favorites' ? '' : ' • ' + getLevelLabel())) : '';
+        else if (num === 6) titleEl.textContent = state.questionsContext && state.currentQuestion ? `Вопрос ${state.currentQuestion} из ${state.totalQuestions} • ${state.questionsContext.name}${state.isFavoritesTest ? '' : ' • ' + getLevelLabel()}` : '';
+        else {
+          const titles = { 1: 'К чему готовишься?', 3: 'По компаниям', 4: 'Категории', 7: 'Избранное', 8: 'Мой прогресс', 9: 'Результаты теста', 10: 'Профиль' };
+          titleEl.textContent = titles[num] || '';
+        }
+      }
+      const backBtn = document.getElementById('top-bar-back');
+      if (backBtn) backBtn.style.display = (state.isLoggedIn && num >= 2) ? 'flex' : 'none';
+      if (num === 1) {
+        if (state.role) document.querySelectorAll('#roles-grid .card').forEach(c => c.classList.toggle('selected', c.dataset.role === state.role));
+        if (state.level) document.querySelectorAll('#screen1-level-chips .chip').forEach(c => c.classList.toggle('active', c.dataset.level === state.level));
+        updateContinueButton();
+      } else if (num === 3) document.getElementById('companies-level').textContent = getLevelLabel();
+      else if (num === 4) document.getElementById('categories-level').textContent = getLevelLabel();
+      else if (num === 8) {
+        document.getElementById('progress-role-chip').textContent = (state.roleLabel || 'Frontend') + ' • ' + getLevelLabel();
+        const prog = PROGRESS_BY_LEVEL[state.level || 'junior'] || { done: 0, total: 40 };
+        const pct = prog.total ? Math.round((prog.done / prog.total) * 100) : 0;
+        document.getElementById('progress-overall-bar').style.width = pct + '%';
+        document.getElementById('progress-overall-text').textContent = `Решено ${prog.done} из ${prog.total} вопросов • ${pct}%`;
+      }
+    }
+
+    const PROGRESS_BY_LEVEL = { junior: { done: 12, total: 40 }, middle: { done: 0, total: 40 }, senior: { done: 0, total: 40 } };
+
+    function updateContinueButton() {
+      document.getElementById('btn-continue').disabled = !(state.role && state.level);
+    }
+
+    function updateHubHeader() {
+      const levelLabel = state.level === 'junior' ? 'Джуниор' : state.level === 'middle' ? 'Мидл' : 'Сеньор';
+      const prog = PROGRESS_BY_LEVEL[state.level] || { done: 0, total: 40 };
+      const pct = prog.total ? Math.round((prog.done / prog.total) * 100) : 0;
+      document.getElementById('hub-progress').textContent = `Решено ${prog.done} из ${prog.total} • ${pct}%`;
+      document.getElementById('hub-progress-bar').style.width = pct + '%';
+      const titleEl = document.getElementById('top-bar-title');
+      if (titleEl && document.getElementById('screen-2').classList.contains('active')) titleEl.textContent = 'Библиотека • ' + (state.roleLabel || 'Frontend') + ' • ' + levelLabel;
+    }
+
+    document.getElementById('roles-grid').addEventListener('click', (e) => {
+      const card = e.target.closest('.card');
+      if (!card) return;
+      document.querySelectorAll('#roles-grid .card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      state.role = card.dataset.role;
+      state.roleLabel = card.querySelector('.card-title').textContent;
+      updateContinueButton();
+    });
+
+    document.getElementById('screen1-level-chips').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      state.level = chip.dataset.level;
+      chip.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      updateContinueButton();
+    });
+
+    function doLogin() {
+      const login = document.getElementById('login-input').value.trim();
+      const password = document.getElementById('password-input').value;
+      if (login && password) {
+        state.isLoggedIn = true;
+        state.userName = login.charAt(0).toUpperCase() + login.slice(1).toLowerCase();
+        document.getElementById('user-name').textContent = state.userName;
+        document.getElementById('profile-name').textContent = state.userName;
+        document.getElementById('login-input').value = '';
+        document.getElementById('password-input').value = '';
+        showScreen(1);
+      }
+    }
+
+    function logout() {
+      state.isLoggedIn = false;
+      document.getElementById('top-bar').classList.remove('visible');
+      showScreen(0);
+    }
+
+    function showProfile() {
+      state.prevScreenBeforeProfile = parseInt(document.querySelector('.screen.active').id.replace('screen-', ''));
+      document.getElementById('profile-name').textContent = state.userName;
+      document.getElementById('profile-email').textContent = state.userEmail;
+      showScreen(10);
+    }
+
+    function goBackFromProfile() {
+      showScreen(state.prevScreenBeforeProfile);
+    }
+
+    function handleTopBarBack() {
+      const active = document.querySelector('.screen.active');
+      if (!active) return;
+      const n = parseInt(active.id.replace('screen-', ''));
+      if (n === 2) showScreen(1);
+      else if (n === 3 || n === 4 || n === 7 || n === 8) showScreen(2);
+      else if (n === 5) backFromQuestions();
+      else if (n === 6) backToQuestionsList();
+      else if (n === 9) backFromTestResult();
+      else if (n === 10) goBackFromProfile();
+    }
+
+    function toggleUserMenu(e) {
+      e.stopPropagation();
+      document.getElementById('user-menu').classList.toggle('open');
+    }
+
+    function closeUserMenu() {
+      document.getElementById('user-menu').classList.remove('open');
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.user-dropdown')) {
+        document.getElementById('user-menu').classList.remove('open');
+      }
+    });
+
+    document.getElementById('btn-continue').addEventListener('click', () => {
+      document.querySelectorAll('#screen1-level-chips .chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.level === state.level);
+      });
+      updateHubHeader();
+      showScreen(2);
+    });
+
+    function getQuestionsForContext() {
+      if (state.questionsContext.type === 'category' && QUESTIONS_BY_CATEGORY[state.questionsContext.name]) {
+        return QUESTIONS_BY_CATEGORY[state.questionsContext.name];
+      }
+      return QUESTIONS_DATA;
+    }
+
+    function renderQuestionsList() {
+      const questions = getQuestionsForContext();
+      const html = questions.map((q, i) => {
+        const thumb = q.image ? '<img class="question-thumb" src="' + q.image + '" alt="">' : '';
+        return '<div class="question-item" onclick="openQuestion(' + (i + 1) + ')">' +
+          '<span class="question-num">' + (i + 1) + '</span>' +
+          thumb +
+          '<span class="question-preview">' + (q.text.length > 45 ? q.text.slice(0, 42) + '…' : q.text) + '</span>' +
+          '<span class="star">☆</span>' +
+          '<span class="question-status" style="color:var(--text-muted)">—</span></div>';
+      }).join('');
+      document.getElementById('questions-list').innerHTML = html;
+    }
+
+    function openQuestions(type, name) {
+      state.questionsContext = { type, name };
+      const levelLabel = (state.level || 'junior') === 'junior' ? 'Джуниор' : (state.level || 'junior') === 'middle' ? 'Мидл' : 'Сеньор';
+      const topTitle = document.getElementById('top-bar-title');
+      if (topTitle) topTitle.textContent = name + (type === 'favorites' ? '' : ' • ' + levelLabel);
+      state.fromFavorites = false;
+      renderQuestionsList();
+      showScreen(5);
+    }
+
+    function backFromQuestions() {
+      if (state.questionsContext.type === 'company') showScreen(3);
+      else if (state.questionsContext.type === 'favorites') showScreen(7);
+      else showScreen(4);
+    }
+
+    function getCurrentQuestion() {
+      return state.currentQuestions[state.currentQuestion - 1];
+    }
+
+    function renderAnswerArea() {
+      const q = getCurrentQuestion();
+      const container = document.getElementById('answer-input-area');
+      container.innerHTML = '';
+      if (q.type === 'short') {
+        container.innerHTML = '<p style="margin-bottom:8px;font-size:0.9rem;color:var(--text-muted)">Ваш ответ:</p><input type="text" id="user-answer" placeholder="' + (q.placeholder || 'Краткий ответ') + '">';
+      } else if (q.type === 'choice') {
+        container.innerHTML = '<p style="margin-bottom:8px;font-size:0.9rem;color:var(--text-muted)">Выберите ответ:</p>' +
+          q.options.map((opt, i) => '<div class="radio-option" data-idx="' + i + '" onclick="selectOption(this)">' + opt + '</div>').join('');
+      }
+    }
+
+    function selectOption(el) {
+      document.querySelectorAll('#answer-input-area .radio-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      state.selectedOption = parseInt(el.dataset.idx);
+    }
+
+    function renderQuestionCard() {
+      const q = getCurrentQuestion();
+      const levelLabel = (state.level || 'junior') === 'junior' ? 'Джуниор' : (state.level || 'junior') === 'middle' ? 'Мидл' : 'Сеньор';
+      const ctx = state.questionsContext.name + (state.isFavoritesTest ? '' : ' • ' + levelLabel);
+
+      const topTitle = document.getElementById('top-bar-title');
+      if (topTitle) topTitle.textContent = `Вопрос ${state.currentQuestion} из ${state.totalQuestions} • ${ctx}`;
+      document.getElementById('question-text').textContent = q.text;
+      const imgWrap = document.getElementById('question-image-wrap');
+      imgWrap.innerHTML = q.image ? '<img class="question-image" src="' + q.image + '" alt="">' : '';
+      document.getElementById('hint-block').textContent = 'Подсказка: ' + q.hint;
+      document.getElementById('correct-answer-text').textContent = q.answer;
+      renderAnswerArea();
+      document.getElementById('btn-next-question').textContent = 'Следующий →';
+    }
+
+    function startQuestionsInRow() {
+      state.currentQuestion = 1;
+      state.answered = false;
+      state.inRowMode = true;
+      state.isFavoritesTest = false;
+      state.currentQuestions = getQuestionsForContext();
+      state.totalQuestions = state.currentQuestions.length;
+      state.testAnswers = [];
+      document.getElementById('answer-area').style.display = 'block';
+      document.getElementById('result-area').style.display = 'none';
+      document.getElementById('hint-block').style.display = 'none';
+      renderQuestionCard();
+      showScreen(6);
+    }
+
+    function startFavoritesTest() {
+      state.currentQuestion = 1;
+      state.answered = false;
+      state.inRowMode = true;
+      state.isFavoritesTest = true;
+      state.currentQuestions = FAVORITES_QUESTIONS;
+      state.totalQuestions = FAVORITES_QUESTIONS.length;
+      state.questionsContext = { type: 'favorites', name: 'Избранное' };
+      state.testAnswers = [];
+      document.getElementById('answer-area').style.display = 'block';
+      document.getElementById('result-area').style.display = 'none';
+      document.getElementById('hint-block').style.display = 'none';
+      renderQuestionCard();
+      showScreen(6);
+    }
+
+    function openQuestion(num) {
+      state.currentQuestion = num;
+      state.answered = false;
+      state.fromFavorites = false;
+      state.inRowMode = false;
+      state.isFavoritesTest = false;
+      state.currentQuestions = getQuestionsForContext();
+      state.totalQuestions = state.currentQuestions.length;
+      document.getElementById('answer-area').style.display = 'block';
+      document.getElementById('result-area').style.display = 'none';
+      document.getElementById('hint-block').style.display = 'none';
+      renderQuestionCard();
+      showScreen(6);
+    }
+
+    function openQuestionFromFav(num) {
+      state.currentQuestion = num;
+      state.answered = false;
+      state.fromFavorites = true;
+      state.inRowMode = false;
+      state.currentQuestions = FAVORITES_QUESTIONS;
+      state.totalQuestions = FAVORITES_QUESTIONS.length;
+      state.questionsContext = { type: 'favorites', name: 'Избранное' };
+      document.getElementById('answer-area').style.display = 'block';
+      document.getElementById('result-area').style.display = 'none';
+      document.getElementById('hint-block').style.display = 'none';
+      renderQuestionCard();
+      showScreen(6);
+    }
+
+    function backToQuestionsList() {
+      if (state.fromFavorites || state.isFavoritesTest) showScreen(7);
+      else showScreen(5);
+    }
+
+    function toggleHint() {
+      const block = document.getElementById('hint-block');
+      block.style.display = block.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function checkAnswer() {
+      const q = getCurrentQuestion();
+      let isCorrect = false;
+      if (q.type === 'short') {
+        const ans = (document.getElementById('user-answer')?.value || '').trim().toLowerCase();
+        const correctAns = q.answer.toLowerCase();
+        isCorrect = ans && (correctAns.includes(ans) || correctAns.split(/[,\s]+/).some(a => a.startsWith(ans) || ans.startsWith(a)));
+        if (!isCorrect && ans.length > 0) isCorrect = Math.random() > 0.7;
+      } else {
+        isCorrect = state.selectedOption !== undefined && state.selectedOption === q.correct;
+      }
+      state.answered = true;
+      if (state.inRowMode) {
+        state.testAnswers[state.currentQuestion - 1] = isCorrect;
+      }
+      document.getElementById('answer-area').style.display = 'none';
+      document.getElementById('result-area').style.display = 'block';
+      document.getElementById('correct-answer-block').className = 'answer-block ' + (isCorrect ? '' : 'incorrect');
+      const nextBtn = document.getElementById('btn-next-question');
+      if (state.inRowMode && state.currentQuestion === state.totalQuestions) {
+        nextBtn.textContent = 'Посмотреть результаты →';
+      }
+    }
+
+    function prevQuestion() {
+      if (state.currentQuestion <= 1) return;
+      state.currentQuestion--;
+      state.answered = true;
+      document.getElementById('answer-area').style.display = 'none';
+      document.getElementById('result-area').style.display = 'block';
+      const wasCorrect = state.inRowMode && state.testAnswers[state.currentQuestion - 1];
+      document.getElementById('correct-answer-block').className = 'answer-block ' + (wasCorrect !== false ? '' : 'incorrect');
+      document.getElementById('correct-answer-text').textContent = getCurrentQuestion().answer;
+      renderQuestionCard();
+      document.getElementById('answer-area').style.display = 'none';
+      document.getElementById('result-area').style.display = 'block';
+      document.getElementById('btn-next-question').textContent = state.currentQuestion === state.totalQuestions ? 'Посмотреть результаты →' : 'Следующий →';
+    }
+
+    function nextQuestion() {
+      if (state.inRowMode && state.currentQuestion === state.totalQuestions) {
+        showTestResult();
+        return;
+      }
+      if (state.currentQuestion < state.totalQuestions) {
+        state.currentQuestion++;
+        state.answered = false;
+        state.selectedOption = null;
+        document.getElementById('answer-area').style.display = 'block';
+        document.getElementById('result-area').style.display = 'none';
+        document.getElementById('hint-block').style.display = 'none';
+        renderQuestionCard();
+        document.getElementById('btn-next-question').textContent = 'Следующий →';
+      }
+    }
+
+    function showTestResult() {
+      const total = state.totalQuestions;
+      const correctCount = state.testAnswers.filter(Boolean).length;
+      const percent = Math.round((correctCount / total) * 100);
+      const lvl = state.level || 'junior';
+      const ctx = state.isFavoritesTest ? state.questionsContext.name : `${state.questionsContext.name} • ${lvl === 'junior' ? 'Джуниор' : lvl === 'middle' ? 'Мидл' : 'Сеньор'}`;
+
+      document.getElementById('result-score').textContent = `${correctCount}/${total}`;
+      document.getElementById('result-detail').textContent = `${percent}% правильных ответов`;
+      document.getElementById('result-context').textContent = ctx;
+
+      let icon = '📊', title = 'Тест пройден!';
+      if (percent >= 80) { icon = '🎉'; title = 'Отлично!'; }
+      else if (percent >= 60) { icon = '👍'; title = 'Хороший результат!'; }
+      else if (percent >= 40) { icon = '📖'; title = 'Есть куда расти'; }
+      else { icon = '💪'; title = 'Продолжай готовиться!'; }
+      document.getElementById('result-icon').textContent = icon;
+      document.getElementById('result-title').textContent = title;
+
+      document.getElementById('btn-retake').style.display = state.isFavoritesTest ? 'flex' : 'flex';
+      document.getElementById('btn-retake').textContent = 'Пройти тест ещё раз';
+      document.getElementById('btn-retake').onclick = state.isFavoritesTest ? startFavoritesTest : retakeTest;
+      document.getElementById('btn-to-list').onclick = state.isFavoritesTest ? () => showScreen(7) : backToQuestionsFromResult;
+      document.getElementById('btn-to-list').textContent = state.isFavoritesTest ? 'К избранному' : 'К списку вопросов';
+
+      showScreen(9);
+    }
+
+    function backFromTestResult() {
+      if (state.isFavoritesTest) showScreen(7);
+      else showScreen(5);
+    }
+
+    function retakeTest() {
+      if (state.isFavoritesTest) startFavoritesTest();
+      else startQuestionsInRow();
+    }
+
+    function backToQuestionsFromResult() {
+      showScreen(5);
+    }
+
+    function showScreenFromResult() {
+      if (state.isFavoritesTest) showScreen(7);
+      else showScreen(2);
+    }
+
+    function toggleFavorite() {
+      state.favorite = !state.favorite;
+      document.getElementById('fav-star').textContent = state.favorite ? '★' : '☆';
+      document.getElementById('fav-star').classList.toggle('filled', state.favorite);
+    }
+
+    function removeFavorite(btn) {
+      const card = btn.closest('.card');
+      card.remove();
+      const cards = document.querySelectorAll('#favorites-list .card');
+      if (cards.length === 0) {
+        document.getElementById('favorites-list').style.display = 'none';
+        document.getElementById('favorites-empty').style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
